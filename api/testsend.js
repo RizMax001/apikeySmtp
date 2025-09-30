@@ -44,17 +44,32 @@ async function sendMail({ account, to, subject, text }) {
 
 module.exports = async (req, res) => {
   const apiKey = req.headers['x-api-key'] || req.query.apikey
-  if (apiKey !== CONFIG.API_KEY) return res.status(403).json({ error: 'Invalid API key' })
+  if (apiKey !== CONFIG.API_KEY) {
+    return res.status(403).json({
+      success: false,
+      error: 'Invalid API key',
+      hint: 'Gunakan header x-api-key atau ?apikey=admin'
+    })
+  }
 
   const email = req.query.email
   const nomor = req.query.nomor
   if (!email || !nomor) {
-    return res.status(400).json({ error: 'Gunakan ?email=alamat&nomor=12345' })
+    return res.status(400).json({
+      success: false,
+      error: 'Parameter kurang',
+      usage: '/api/testsend?apikey=admin&email=target@example.com&nomor=628xxx'
+    })
   }
 
   try {
     const accounts = loadAccounts()
-    if (!accounts.length) return res.status(500).json({ error: 'Tidak ada akun SMTP di dataimel.txt' })
+    if (!accounts.length) {
+      return res.status(500).json({
+        success: false,
+        error: 'Tidak ada akun SMTP di dataimel.txt'
+      })
+    }
 
     const subject = `Test Banding ${counter}`
     const text = `Test kirim.\nNomor: +${nomor}\n#${counter}`
@@ -65,9 +80,21 @@ module.exports = async (req, res) => {
     logToFile(`TEST by ${account.user} → ${email} | Subject: ${subject} | Nomor: +${nomor}`)
 
     counter++
-    return res.json({ success: true, usedAccount: account.user, subject, info })
+    return res.json({
+      success: true,
+      message: 'Email berhasil dikirim',
+      usedAccount: account.user,
+      to: email,
+      nomor: `+${nomor}`,
+      subject,
+      messageId: info.messageId || null,
+      response: info
+    })
   } catch (err) {
     logToFile(`ERROR: ${err.message}`)
-    return res.status(500).json({ error: err.message })
+    return res.status(500).json({
+      success: false,
+      error: err.message
+    })
   }
-}
+    }
