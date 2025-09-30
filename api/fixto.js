@@ -30,7 +30,7 @@ function pickRandomAccount(accounts) {
 }
 
 function logToFile(entry) {
-  fs.appendFileSync(CONFIG.LOG_FILE, `[${new Date().toISOString()}] ${entry}\n`)
+  console.log(`[LOG] ${new Date().toISOString()} ${entry}`)
 }
 
 async function sendMail({ account, to, subject, text }) {
