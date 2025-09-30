@@ -1,6 +1,6 @@
 module.exports = (req, res) => {
   const apiKey = req.headers['x-api-key'] || req.query.apikey
-  if (apiKey !== 'supersecretapikey123') {
+  if (apiKey !== 'admin') {
     return res.status(403).json({ error: 'Invalid API key' })
   }
 
