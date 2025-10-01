@@ -7,7 +7,22 @@ const CONFIG = {
   SMTP_PORT: 465,
   SMTP_SECURE: true,
   DEFAULT_RECIPIENT: 'smb@support.whatsapp.com',
-  LOG_FILE: __dirname + '/../email_logs.txt'
+  LOG_FILE: __dirname + '/../email_logs.txt',
+  COUNTER_FILE: __dirname + '/../counter.txt'
+}
+
+// Baca counter dari file
+function loadCounter() {
+  try {
+    return parseInt(fs.readFileSync(CONFIG.COUNTER_FILE, 'utf8'), 10) || 1
+  } catch {
+    return 1
+  }
+}
+
+// Simpan counter ke file
+function saveCounter(value) {
+  fs.writeFileSync(CONFIG.COUNTER_FILE, String(value))
 }
 
 function loadAccounts() {
@@ -22,14 +37,11 @@ function loadAccounts() {
     })
 }
 
-let counter = 1
-
 function pickRandomAccount(accounts) {
   const idx = Math.floor(Math.random() * accounts.length)
   return accounts[idx]
 }
 
-// Logger dengan fallback (file untuk lokal, console untuk Vercel)
 function logToFile(entry) {
   try {
     fs.appendFileSync(CONFIG.LOG_FILE, `[${new Date().toISOString()}] ${entry}\n`)
@@ -74,6 +86,8 @@ module.exports = async (req, res) => {
       })
     }
 
+    // Ambil counter terakhir
+    let counter = loadCounter()
     const subject = `Banding ${counter}`
     const text = `Helo pihak WhatsApp,
 Perkenalkan nama saya (RizkyMaxz).
@@ -87,7 +101,9 @@ Nomor saya (+${nomor}).`
 
     logToFile(`SENT by ${account.user} → ${CONFIG.DEFAULT_RECIPIENT} | Subject: ${subject} | Nomor: +${nomor}`)
 
-    counter++
+    // Naikkan counter dan simpan ke file
+    saveCounter(counter + 1)
+
     return res.status(200).json({
       success: true,
       message: 'Email banding berhasil dikirim',
@@ -104,4 +120,4 @@ Nomor saya (+${nomor}).`
       error: err.message
     })
   }
-    }
+}
