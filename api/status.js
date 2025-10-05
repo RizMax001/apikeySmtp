@@ -1,4 +1,3 @@
-      // api/status.js
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
@@ -9,32 +8,40 @@ module.exports = async (req, res) => {
     return res.status(403).json({ error: 'Invalid API key' });
   }
 
-  const filePath = path.join(__dirname, 'dataemail.txt');
+  // cari file dataemail.txt di root project
+  const filePath = path.join(process.cwd(), 'dataemail.txt');
+
+  // kalau file gak ada
   if (!fs.existsSync(filePath)) {
     return res.json({
       status: 'OK',
-      message: 'Service aktif 🚀',
+      message: 'File dataemail.txt tidak ditemukan ⚠️',
       total_email: 0,
       connect: 0,
-      disconnect: 0,
-      list_connect: [],
-      list_disconnect: []
+      disconnect: 0
     });
   }
 
   const raw = fs.readFileSync(filePath, 'utf-8').trim();
+  if (!raw) {
+    return res.json({
+      status: 'OK',
+      message: 'File dataemail.txt kosong ⚠️',
+      total_email: 0,
+      connect: 0,
+      disconnect: 0
+    });
+  }
+
   const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
-  const limited = lines.slice(0, 11);
+  const limited = lines.slice(0, 11); // cek maksimal 11 email
 
   let connectCount = 0;
   let disconnectCount = 0;
-  let list_connect = [];
-  let list_disconnect = [];
 
   for (const line of limited) {
     const [email, pass] = line.split(':').map(x => x.trim());
     if (!email || !pass) {
-      list_disconnect.push(email || 'unknown');
       disconnectCount++;
       continue;
     }
@@ -49,10 +56,8 @@ module.exports = async (req, res) => {
       });
 
       await transporter.verify();
-      list_connect.push(email);
       connectCount++;
-    } catch (err) {
-      list_disconnect.push(email);
+    } catch {
       disconnectCount++;
     }
   }
@@ -63,6 +68,5 @@ module.exports = async (req, res) => {
     total_email: limited.length,
     connect: connectCount,
     disconnect: disconnectCount
-    
   });
 };
