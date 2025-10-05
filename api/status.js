@@ -9,7 +9,7 @@ module.exports = async (req, res) => {
     return res.status(403).json({ error: 'Invalid API key' });
   }
 
-  const filePath = path.join(__dirname, 'emaildata.txt');
+  const filePath = path.join(__dirname, 'dataemail.txt');
   if (!fs.existsSync(filePath)) {
     return res.json({
       status: 'OK',
@@ -62,8 +62,7 @@ module.exports = async (req, res) => {
     message: 'Service aktif 🚀',
     total_email: limited.length,
     connect: connectCount,
-    disconnect: disconnectCount,
-    list_connect,
-    list_disconnect
+    disconnect: disconnectCount
+    
   });
 };
