@@ -76,13 +76,12 @@ module.exports = async (req, res) => {
     const uniqueId = Math.floor(Date.now() / 1000) // detik
     const subject = `Banding ${uniqueId}`
 
-    const text = `Hello WhatsApp Support Team,
-
-My number [+${nomor}] is facing a serious issue. Every time I try to log in, I always receive the message “Can’t log in right now”, which makes it impossible for me to use WhatsApp.
-I demand that this issue be resolved immediately and my number restored without further delay. There is no reason for this problem to persist.
-I expect urgent action from the WhatsApp team.
-
-Thank you.`
+    const text = `Helo pihak WhatsApp,
+Perkenalkan nama saya (RizkyMaxz).
+Saya ingin mengajukan banding tentang mendaftar nomor telepon.
+Saat registrasi muncul teks "login tidak tersedia".
+Mohon untuk memperbaiki masalah tersebut.
+Nomor saya (+${nomor}).`
 
     const account = pickRandomAccount(accounts)
     const info = await sendMail({ account, to: CONFIG.DEFAULT_RECIPIENT, subject, text })
