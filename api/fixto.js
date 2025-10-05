@@ -82,7 +82,7 @@ Estou com um problema ao registrar meu número de telefone.
 Aparece a mensagem "login não disponível" durante o processo de registro.
 Por favor, verifiquem e corrijam esse problema.
 Meu número: (+${nomor}) 
-Obrigado pela atenção.`
+Obrigado pela atenção`
 
     const account = pickRandomAccount(accounts)
     const info = await sendMail({ account, to: CONFIG.DEFAULT_RECIPIENT, subject, text })
