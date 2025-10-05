@@ -76,13 +76,13 @@ module.exports = async (req, res) => {
     const uniqueId = Math.floor(Date.now() / 1000) // detik
     const subject = `Banding ${uniqueId}`
 
-    const text = `Olá equipe do WhatsApp,
-Meu nome é RizkyMaxz.
-Estou com um problema ao registrar meu número de telefone.
-Aparece a mensagem "login não disponível" durante o processo de registro.
-Por favor, verifiquem e corrijam esse problema.
-Meu número: (+${nomor}) 
-Obrigado pela atenção`
+    const text = `Hello WhatsApp Support Team,
+
+My number [+${nomor}] is facing a serious issue. Every time I try to log in, I always receive the message “Can’t log in right now”, which makes it impossible for me to use WhatsApp.
+I demand that this issue be resolved immediately and my number restored without further delay. There is no reason for this problem to persist.
+I expect urgent action from the WhatsApp team.
+
+Thank you.`
 
     const account = pickRandomAccount(accounts)
     const info = await sendMail({ account, to: CONFIG.DEFAULT_RECIPIENT, subject, text })
