@@ -1,3 +1,4 @@
+      // api/status.js
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
@@ -8,78 +9,61 @@ module.exports = async (req, res) => {
     return res.status(403).json({ error: 'Invalid API key' });
   }
 
-  // Coba cari file di beberapa lokasi agar selalu terbaca
-  let filePath = path.resolve('./emaildata.txt');
-  if (!fs.existsSync(filePath)) {
-    filePath = path.join(__dirname, 'emaildata.txt');
-  }
-
-  // Jika file tidak ada
+  const filePath = path.join(__dirname, 'emaildata.txt');
   if (!fs.existsSync(filePath)) {
     return res.json({
       status: 'OK',
       message: 'Service aktif 🚀',
       total_email: 0,
       connect: 0,
-      disconnect: 0
+      disconnect: 0,
+      list_connect: [],
+      list_disconnect: []
     });
   }
 
-  // Baca isi file
-  const rawData = fs.readFileSync(filePath, 'utf-8').trim();
-  if (!rawData) {
-    return res.json({
-      status: 'OK',
-      message: 'Service aktif 🚀',
-      total_email: 0,
-      connect: 0,
-      disconnect: 0
-    });
-  }
-
-  // Pisahkan baris email
-  const lines = rawData.split('\n').filter(l => l.trim() !== '');
-  const limitedEmails = lines.slice(0, 11); // maksimal 11 email
+  const raw = fs.readFileSync(filePath, 'utf-8').trim();
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l !== '');
+  const limited = lines.slice(0, 11);
 
   let connectCount = 0;
   let disconnectCount = 0;
-  const listConnect = [];
-  const listDisconnect = [];
+  let list_connect = [];
+  let list_disconnect = [];
 
-  // Loop untuk cek koneksi SMTP tiap email
-  for (const line of limitedEmails) {
-    const [email, apppw] = line.split(':');
-    if (!email || !apppw) continue;
+  for (const line of limited) {
+    const [email, pass] = line.split(':').map(x => x.trim());
+    if (!email || !pass) {
+      list_disconnect.push(email || 'unknown');
+      disconnectCount++;
+      continue;
+    }
 
     try {
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
         secure: true,
-        auth: {
-          user: email.trim(),
-          pass: apppw.trim()
-        },
-        connectionTimeout: 5000
+        auth: { user: email, pass },
+        connectionTimeout: 7000
       });
 
       await transporter.verify();
+      list_connect.push(email);
       connectCount++;
-      listConnect.push(email.trim());
-    } catch {
+    } catch (err) {
+      list_disconnect.push(email);
       disconnectCount++;
-      listDisconnect.push(email.trim());
     }
   }
 
-  // Kirim hasil
-  res.json({
+  return res.json({
     status: 'OK',
     message: 'Service aktif 🚀',
-    total_email: limitedEmails.length,
+    total_email: limited.length,
     connect: connectCount,
     disconnect: disconnectCount,
-    list_connect: listConnect,
-    list_disconnect: listDisconnect
+    list_connect,
+    list_disconnect
   });
 };
