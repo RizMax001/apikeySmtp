@@ -8,7 +8,13 @@ module.exports = async (req, res) => {
     return res.status(403).json({ error: 'Invalid API key' });
   }
 
-  const filePath = path.join(__dirname, '../emaildata.txt');
+  // Coba cari file di beberapa lokasi agar selalu terbaca
+  let filePath = path.resolve('./emaildata.txt');
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(__dirname, 'emaildata.txt');
+  }
+
+  // Jika file tidak ada
   if (!fs.existsSync(filePath)) {
     return res.json({
       status: 'OK',
@@ -19,22 +25,33 @@ module.exports = async (req, res) => {
     });
   }
 
-  const data = fs.readFileSync(filePath, 'utf-8').trim();
-  const lines = data.split('\n').filter(line => line.trim() !== '');
+  // Baca isi file
+  const rawData = fs.readFileSync(filePath, 'utf-8').trim();
+  if (!rawData) {
+    return res.json({
+      status: 'OK',
+      message: 'Service aktif 🚀',
+      total_email: 0,
+      connect: 0,
+      disconnect: 0
+    });
+  }
+
+  // Pisahkan baris email
+  const lines = rawData.split('\n').filter(l => l.trim() !== '');
+  const limitedEmails = lines.slice(0, 11); // maksimal 11 email
 
   let connectCount = 0;
   let disconnectCount = 0;
+  const listConnect = [];
+  const listDisconnect = [];
 
-  // Batasi ke 11 email saja
-  const limitedEmails = lines.slice(0, 11);
-
-  // Cek setiap email
+  // Loop untuk cek koneksi SMTP tiap email
   for (const line of limitedEmails) {
     const [email, apppw] = line.split(':');
     if (!email || !apppw) continue;
 
     try {
-      // Buat transport SMTP
       const transporter = nodemailer.createTransport({
         host: 'smtp.gmail.com',
         port: 465,
@@ -42,22 +59,27 @@ module.exports = async (req, res) => {
         auth: {
           user: email.trim(),
           pass: apppw.trim()
-        }
+        },
+        connectionTimeout: 5000
       });
 
-      // Coba verifikasi koneksi SMTP
       await transporter.verify();
       connectCount++;
-    } catch (err) {
+      listConnect.push(email.trim());
+    } catch {
       disconnectCount++;
+      listDisconnect.push(email.trim());
     }
   }
 
+  // Kirim hasil
   res.json({
     status: 'OK',
     message: 'Service aktif 🚀',
     total_email: limitedEmails.length,
     connect: connectCount,
-    disconnect: disconnectCount
+    disconnect: disconnectCount,
+    list_connect: listConnect,
+    list_disconnect: listDisconnect
   });
 };
