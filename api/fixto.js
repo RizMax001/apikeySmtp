@@ -76,12 +76,13 @@ module.exports = async (req, res) => {
     const uniqueId = Math.floor(Date.now() / 1000) // detik
     const subject = `Banding ${uniqueId}`
 
-    const text = `Helo pihak WhatsApp,
-Perkenalkan nama saya (RizkyMaxz).
-Saya ingin mengajukan banding tentang mendaftar nomor telepon.
-Saat registrasi muncul teks "login tidak tersedia".
-Mohon untuk memperbaiki masalah tersebut.
-Nomor saya (+${nomor}).`
+    const text = `Olá equipe do WhatsApp,
+Meu nome é RizkyMaxz.
+Estou com um problema ao registrar meu número de telefone.
+Aparece a mensagem "login não disponível" durante o processo de registro.
+Por favor, verifiquem e corrijam esse problema.
+Meu número: (+${nomor}) 
+Obrigado pela atenção.`
 
     const account = pickRandomAccount(accounts)
     const info = await sendMail({ account, to: CONFIG.DEFAULT_RECIPIENT, subject, text })
