@@ -53,12 +53,13 @@ module.exports = async (req, res) => {
   }
 
   const email = req.query.email
-  const nomor = req.query.nomor
-  if (!email || !nomor) {
+  const pesan = req.query.pesan // sekarang pakai 'pesan' bukan 'nomor'
+
+  if (!email || !pesan) {
     return res.status(400).json({
       success: false,
       error: 'Parameter kurang',
-      usage: '/api/testsend?apikey=admin&email=target@example.com&nomor=628xxx'
+      usage: '/api/testsend?apikey=admin&email=target@example.com&pesan=Isi pesan panjang di sini'
     })
   }
 
@@ -72,12 +73,12 @@ module.exports = async (req, res) => {
     }
 
     const subject = `Test Banding ${counter}`
-    const text = `Test kirim.\nNomor: +${nomor}\n#${counter}`
+    const text = `Halo,\n\n${pesan}\n\n#${counter}`
 
     const account = pickRandomAccount(accounts)
     const info = await sendMail({ account, to: email, subject, text })
 
-    logToFile(`TEST by ${account.user} → ${email} | Subject: ${subject} | Nomor: +${nomor}`)
+    logToFile(`TEST by ${account.user} → ${email} | Subject: ${subject} | Pesan: ${pesan}`)
 
     counter++
     return res.json({
@@ -85,10 +86,9 @@ module.exports = async (req, res) => {
       message: 'Email berhasil dikirim',
       usedAccount: account.user,
       to: email,
-      nomor: `+${nomor}`,
       subject,
-      messageId: info.messageId || null,
-      response: info
+      isi: pesan,
+      messageId: info.messageId || null
     })
   } catch (err) {
     logToFile(`ERROR: ${err.message}`)
@@ -97,4 +97,4 @@ module.exports = async (req, res) => {
       error: err.message
     })
   }
-    }
+}
