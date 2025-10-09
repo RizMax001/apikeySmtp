@@ -2,7 +2,7 @@ const fs = require('fs')
 const nodemailer = require('nodemailer')
 
 const CONFIG = {
-  API_KEY: 'admin',
+  API_KEY: 'merona',
   SMTP_HOST: 'smtp.gmail.com',
   SMTP_PORT: 465,
   SMTP_SECURE: true,
